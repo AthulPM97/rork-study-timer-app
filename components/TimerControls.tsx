@@ -8,6 +8,7 @@ import * as Haptics from 'expo-haptics';
 interface TimerControlsProps {
   isRunning: boolean;
   isPaused: boolean;
+  isBackgroundMode?: boolean;
   onStart: () => void;
   onPause: () => void;
   onResume: () => void;
@@ -18,6 +19,7 @@ interface TimerControlsProps {
 export default function TimerControls({
   isRunning,
   isPaused,
+  isBackgroundMode = false,
   onStart,
   onPause,
   onResume,
@@ -46,7 +48,7 @@ export default function TimerControls({
         </TouchableOpacity>
       ) : (
         <View style={styles.controlsRow}>
-          {isRunning ? (
+          {isRunning && !isBackgroundMode ? (
             <TouchableOpacity 
               style={[styles.button, styles.secondaryButton]} 
               onPress={() => {
@@ -57,7 +59,7 @@ export default function TimerControls({
               <Pause color={Colors.light.text} size={24} />
               <Text style={styles.secondaryButtonText}>Pause</Text>
             </TouchableOpacity>
-          ) : (
+          ) : isPaused ? (
             <TouchableOpacity 
               style={[styles.button, styles.primaryButton]} 
               onPress={() => {
@@ -68,7 +70,7 @@ export default function TimerControls({
               <Play color="#FFF" size={24} />
               <Text style={styles.buttonText}>Resume</Text>
             </TouchableOpacity>
-          )}
+          ) : null}
           
           <TouchableOpacity 
             style={[styles.button, styles.secondaryButton]} 

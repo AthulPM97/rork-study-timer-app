@@ -6,9 +6,10 @@ import Colors from '@/constants/colors';
 interface TimerDisplayProps {
   timeRemaining: number;
   duration: number;
+  isBackgroundMode?: boolean;
 }
 
-export default function TimerDisplay({ timeRemaining, duration }: TimerDisplayProps) {
+export default function TimerDisplay({ timeRemaining, duration, isBackgroundMode = false }: TimerDisplayProps) {
   // Format time as MM:SS
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -39,7 +40,7 @@ export default function TimerDisplay({ timeRemaining, duration }: TimerDisplayPr
           cx="140"
           cy="140"
           r={radius}
-          stroke={Colors.light.primary}
+          stroke={isBackgroundMode ? Colors.light.secondary : Colors.light.primary}
           strokeWidth="12"
           strokeDasharray={circumference}
           strokeDashoffset={strokeDashoffset}
@@ -49,9 +50,19 @@ export default function TimerDisplay({ timeRemaining, duration }: TimerDisplayPr
         />
       </Svg>
       <View style={styles.timeContainer}>
-        <Text style={styles.timeText}>{formatTime(timeRemaining)}</Text>
+        <Text style={[
+          styles.timeText, 
+          isBackgroundMode && styles.backgroundTimeText
+        ]}>
+          {formatTime(timeRemaining)}
+        </Text>
         <Text style={styles.labelText}>
-          {timeRemaining === 0 ? "Time's up!" : "remaining"}
+          {timeRemaining === 0 
+            ? "Time's up!" 
+            : isBackgroundMode 
+              ? "running in background" 
+              : "remaining"
+          }
         </Text>
       </View>
     </View>
@@ -74,6 +85,9 @@ const styles = StyleSheet.create({
     fontSize: 56,
     fontWeight: '300',
     color: Colors.light.text,
+  },
+  backgroundTimeText: {
+    color: Colors.light.secondary,
   },
   labelText: {
     fontSize: 16,

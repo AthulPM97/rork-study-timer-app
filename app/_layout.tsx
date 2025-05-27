@@ -6,6 +6,9 @@ import { StatusBar } from "expo-status-bar";
 import Colors from "@/constants/colors";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { trpc, trpcClient } from "@/lib/trpc";
+import { AppState, Platform } from "react-native";
+import useTimerStore from "@/store/timerStore";
+import * as KeepAwake from "expo-keep-awake";
 
 export const unstable_settings = {
   initialRouteName: "(tabs)",
@@ -42,6 +45,45 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
+  const { isRunning, isPaused, setBackgroundMode, syncTimerWithRealTime } = useTimerStore();
+
+  // Handle app state changes (foreground/background)
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", (nextAppState) => {
+      if (nextAppState === "active") {
+        // App has come to the foreground
+        setBackgroundMode(false);
+        syncTimerWithRealTime();
+      } else if (nextAppState === "background" || nextAppState === "inactive") {
+        // App has gone to the background
+        if (isRunning && !isPaused) {
+          setBackgroundMode(true);
+        }
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [isRunning, isPaused, setBackgroundMode, syncTimerWithRealTime]);
+
+  // Keep screen awake when timer is running
+  useEffect(() => {
+    if (Platform.OS !== "web") {
+      if (isRunning && !isPaused) {
+        KeepAwake.activateKeepAwakeAsync();
+      } else {
+        KeepAwake.deactivateKeepAwakeAsync();
+      }
+    }
+
+    return () => {
+      if (Platform.OS !== "web") {
+        KeepAwake.deactivateKeepAwakeAsync();
+      }
+    };
+  }, [isRunning, isPaused]);
+
   return (
     <>
       <StatusBar style="dark" />
